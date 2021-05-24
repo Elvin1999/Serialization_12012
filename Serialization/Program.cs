@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -227,49 +228,140 @@ namespace Serialization
     #region BinarySerialization
 
 
+    //class Program
+    //{
+    //    static void BinarySerialize()
+    //    {
+    //        var database = new Translator[]
+    //        {
+    //            new Translator("Akif","Akifli",1),
+    //            new Translator("Leyla","Mammadova",2),
+    //            new Translator("Tural","Eliyev",3),
+    //            new Translator("Nergiz","Nergizli",4)
+    //        };
+
+    //        var bf = new BinaryFormatter();
+    //        using (var fs=new FileStream("file.bin",FileMode.OpenOrCreate))
+    //        {
+    //            bf.Serialize(fs, database);
+    //        }
+    //        Console.WriteLine("Ready");
+    //    }
+
+    //    static void BinaryDeserialize()
+    //    {
+    //        Translator[] db = null;
+
+    //        var bf = new BinaryFormatter();
+    //        using (var fs=new FileStream("file.bin",FileMode.OpenOrCreate))
+    //        {
+    //            db = bf.Deserialize(fs) as Translator[];
+    //        }
+    //        foreach (var item in db)
+    //        {
+    //            Console.WriteLine(item);
+    //        }
+    //    }
+
+    //    static void Main(string[] args)
+    //    {
+    //        //BinarySerialize();
+    //       // BinaryDeserialize();
+    //    }
+    //}
+
+
+
+    #endregion
+
+
+    #region JsonSerialization
+
+    [Serializable]
+    class Car
+    {
+        //[JsonIgnore]
+        public int Year { get; set; }
+        [JsonProperty("ModelOfCar")]
+        public string Model { get; set; }
+
+        [JsonRequired]
+        public string Vendor { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Model} - {Vendor} - {Year}";
+        }
+    }
     class Program
     {
-        static void BinarySerialize()
+
+        static void JsonSerialize()
         {
-            var database = new Translator[]
+            List<Car> cars = new List<Car>
             {
-                new Translator("Akif","Akifli",1),
-                new Translator("Leyla","Mammadova",2),
-                new Translator("Tural","Eliyev",3),
-                new Translator("Nergiz","Nergizli",4)
+                new Car
+                {
+                    Model="Mustang",
+                    Vendor="Ford",
+                    Year=1964
+                },
+                 new Car
+                {
+                    Model="Charger",
+                    Vendor="Dodge",
+                    Year=2000
+                },
+                  new Car
+                {
+                    Model="Chiron",
+                    Vendor="Bugatti",
+                    Year=2021
+                },
+                   new Car
+                {
+                    Model="La Ferrari",
+                    Vendor="Ferrari",
+                    Year=2016
+                }
             };
 
-            var bf = new BinaryFormatter();
-            using (var fs=new FileStream("file.bin",FileMode.OpenOrCreate))
+
+            var serializer = new JsonSerializer();
+            using (var sw = new StreamWriter("cars.json"))
             {
-                bf.Serialize(fs, database);
+                using (var jw=new JsonTextWriter(sw))
+                {
+                    jw.Formatting = Newtonsoft.Json.Formatting.Indented;
+                    serializer.Serialize(jw, cars);
+                }
             }
-            Console.WriteLine("Ready");
+
         }
 
-        static void BinaryDeserialize()
+        static void JsonDeserialize()
         {
-            Translator[] db = null;
-
-            var bf = new BinaryFormatter();
-            using (var fs=new FileStream("file.bin",FileMode.OpenOrCreate))
+            Car[] cars = null;
+            var serializer = new JsonSerializer();
+            using (var sr=new StreamReader("cars.json"))
             {
-                db = bf.Deserialize(fs) as Translator[];
-            }
-            foreach (var item in db)
-            {
-                Console.WriteLine(item);
+                using (var jr=new JsonTextReader(sr))
+                {
+                    cars = serializer.Deserialize<Car[]>(jr);
+                }
+                foreach (var item in cars)
+                {
+                    Console.WriteLine(item);
+                }
             }
         }
 
         static void Main(string[] args)
         {
-            //BinarySerialize();
-            BinaryDeserialize();
+            JsonSerialize();
+            JsonDeserialize();
         }
     }
-
-
 
     #endregion
 
